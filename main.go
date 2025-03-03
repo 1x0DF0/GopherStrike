@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"GopherStrike/utils"
+	"fmt"
+)
 
 func displayBanner() {
 	banner := `
@@ -14,6 +17,14 @@ func displayBanner() {
 	fmt.Println(banner)
 }
 
-func main() {
+func mainMenu() { //here we will pass our tool list
 	displayBanner()
+	fmt.Println("\nAvailable Tools:")
+	fmt.Println("================")
+
+}
+
+func main() {
+	utils.ClearScreen() //clears the screen for the UI
+	mainMenu()
 }
