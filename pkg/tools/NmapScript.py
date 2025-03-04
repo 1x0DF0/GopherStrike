@@ -11,7 +11,18 @@ import concurrent
 import math
 import logging
 import logging.handlers
+import argparse
 from concurrent.futures import ThreadPoolExecutor
+
+
+def parse_arguments():
+    """Parse command-line arguments"""
+    parser = argparse.ArgumentParser(description='Advanced Port Scanner')
+    parser.add_argument('--target', help='Target IP address')
+    parser.add_argument('--port-choice', help='Port range preset (1-4)')
+    parser.add_argument('--port-range', nargs=2, help='Custom port range (start end)')
+
+    return parser.parse_args()
 
 
 def setup_logging():
@@ -177,11 +188,28 @@ def scan_ports(target, start_port, end_port):
             bar = '=' * filled + '-' * (bar_length - filled)
             percent = int(progress * 100)
             print(f'\rProgress: [{bar}] {percent}% (scanning ports {chunk_start}-{chunk_end})', end='')
+            sys.stdout.flush()  # Ensure output is flushed
 
-            # Scan this chunk
+            # Scan this chunk - use sudo explicitly if needed
             chunk_range = f"{chunk_start}-{chunk_end}"
+            scan_args = f"-sS -T4 -n --min-rate=1000 -p{chunk_range} {target}"
+
             try:
-                nm.scan(target, ports=chunk_range, arguments='-sS -T4 -n --min-rate=1000')
+                if hasattr(os, 'geteuid') and os.geteuid() != 0:
+                    # Not running as root, try to use sudo with nmap directly
+                    print(f"\nRunning nmap with sudo for chunk {chunk_start}-{chunk_end}")
+                    result = os.system(f"sudo nmap {scan_args} -oX /tmp/nmap_chunk_{chunk}.xml")
+                    if result == 0:
+                        # Parse the XML output
+                        try:
+                            nm.analyse_nmap_xml_scan(open(f"/tmp/nmap_chunk_{chunk}.xml", 'r').read())
+                        except Exception as e:
+                            logger.error(f"\nError parsing nmap XML: {e}")
+                    else:
+                        logger.error(f"\nError running nmap with sudo: exit code {result}")
+                else:
+                    # Running as root, use python-nmap normally
+                    nm.scan(target, ports=chunk_range, arguments='-sS -T4 -n --min-rate=1000')
 
                 # Process results for this chunk
                 if target in nm.all_hosts():
@@ -563,12 +591,41 @@ if __name__ == "__main__":
         # Check for root privileges
         check_root()
 
-        # Get target information
-        target = get_target_ip()
-        logger.info(f"Target selected: {target}")
+        # Parse command-line arguments
+        args = parse_arguments()
 
-        start_port, end_port = get_port_range()
-        logger.info(f"Port range selected: {start_port}-{end_port}")
+        # Get target information
+        if args.target:
+            target = args.target
+            logger.info(f"Target selected from command line: {target}")
+        else:
+            target = get_target_ip()
+            logger.info(f"Target selected interactively: {target}")
+
+        # Get port range
+        if args.port_choice:
+            choice = args.port_choice
+            if choice == '1':
+                start_port, end_port = 1, 1024
+            elif choice == '2':
+                start_port, end_port = 1, 5000
+            elif choice == '3':
+                start_port, end_port = 1, 65535
+            else:
+                logger.warning("Invalid port choice, using default range")
+                start_port, end_port = 1, 1024
+            logger.info(f"Port range selected from command line: {start_port}-{end_port}")
+        elif args.port_range:
+            try:
+                start_port = int(args.port_range[0])
+                end_port = int(args.port_range[1])
+                logger.info(f"Custom port range selected from command line: {start_port}-{end_port}")
+            except ValueError:
+                logger.warning("Invalid custom port range, using default")
+                start_port, end_port = 1, 1024
+        else:
+            start_port, end_port = get_port_range()
+            logger.info(f"Port range selected interactively: {start_port}-{end_port}")
 
         # Start scanning
         scan_start_time = datetime.now()
@@ -578,9 +635,39 @@ if __name__ == "__main__":
 
         if open_ports:
             print_summary(target, open_ports, scan_start_time)
+
+            # Create a specific output file for the Go program to read
+            summary_file = os.path.join("logs", f"lastscan_{target}.txt")
+            with open(summary_file, "w") as f:
+                f.write(f"SCAN SUMMARY FOR {target}\n")
+                f.write("="*60 + "\n")
+                f.write(f"Scan started at: {scan_start_time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                f.write(f"Scan duration: {(datetime.now() - scan_start_time).total_seconds():.2f} seconds\n")
+                f.write(f"Open ports found: {len(open_ports)}\n\n")
+
+                if open_ports:
+                    f.write("Open Ports:\n")
+                    for port in open_ports:
+                        service = get_service_name(port)
+                        f.write(f"  - {port}/tcp: {service}\n")
+
+                f.write("="*60 + "\n")
+
+            # For better visibility
+            print(f"\n[+] Saved scan summary to {summary_file}")
+
+            # Continue with the standard logging
             nmap_logger(open_ports, target, start_port, end_port, scan_start_time)
         else:
             logger.info("\nNo open ports found.")
+
+            # Create empty summary file
+            summary_file = os.path.join("logs", f"lastscan_{target}.txt")
+            with open(summary_file, "w") as f:
+                f.write(f"SCAN SUMMARY FOR {target}\n")
+                f.write("="*60 + "\n")
+                f.write(f"No open ports found.\n")
+                f.write("="*60 + "\n")
     except KeyboardInterrupt:
         logger.info("\n\nScan interrupted by user. Exiting...")
     except Exception as e:
