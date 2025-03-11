@@ -50,13 +50,22 @@ func mainMenu() {
 		utils.ClearScreen()
 		mainMenu() // Return to main menu after tool completes
 	case "2":
+		// Run subdomain scanner
+		if err := pkg.RunSubdomainScannerWithCheck(); err != nil {
+			fmt.Println("Error:", err)
+		}
+		fmt.Println("\nPress Enter to continue...")
+		fmt.Scanln()
+		utils.ClearScreen()
+		mainMenu()
+	case "3":
 		// Run dependency check
 		pkg.PrintDependencyStatus()
 		fmt.Println("\nPress Enter to continue...")
 		fmt.Scanln()
 		utils.ClearScreen()
 		mainMenu()
-	case "3":
+	case "4":
 		fmt.Println("Exiting GopherStrike. Goodbye!")
 		os.Exit(0)
 	default:
