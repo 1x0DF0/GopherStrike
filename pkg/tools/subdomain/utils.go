@@ -1,4 +1,4 @@
-// pkg/subdomain/utils.go
+// pkg/tools/subdomain/utils.go
 package subdomain
 
 import (

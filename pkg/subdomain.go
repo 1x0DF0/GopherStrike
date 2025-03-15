@@ -1,7 +1,7 @@
 package pkg
 
 import (
-	"GopherStrike/pkg/subdomain"
+	"GopherStrike/pkg/tools/subdomain"
 )
 
 // RunSubdomainScannerWithCheck executes the subdomain scanner

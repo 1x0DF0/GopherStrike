@@ -1,4 +1,4 @@
-// pkg/subdomain/scanner.go
+// pkg/tools/subdomain/scanner.go
 package subdomain
 
 import (
@@ -269,7 +269,7 @@ func saveJSONResults(scanCtx *ScanContext, result tools.ScanResult, filename str
 }
 
 // saveCSVResults saves the results in CSV format for spreadsheet import
-func saveCSVResults(scanCtx *ScanContext, result tools.ScanResult, filename string) error {
+func saveCSVResults(_ *ScanContext, result tools.ScanResult, filename string) error {
 	// Open the file for writing
 	file, err := os.Create(filename)
 	if err != nil {
