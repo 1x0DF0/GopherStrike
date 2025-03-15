@@ -27,8 +27,9 @@ func mainMenu() {
 	fmt.Println("================")
 	fmt.Println("1. Port Scanner")
 	fmt.Println("2. Subdomain Scanner")
-	fmt.Println("3. Check Dependencies")
-	fmt.Println("4. Exit")
+	fmt.Println("3. OSINT & Vulnerability Tool")
+	fmt.Println("4. Check Dependencies")
+	fmt.Println("5. Exit")
 
 	var choice string
 	fmt.Print("\nSelect a tool: ")
@@ -59,13 +60,22 @@ func mainMenu() {
 		utils.ClearScreen()
 		mainMenu()
 	case "3":
+		// Run OSINT tool
+		if err := pkg.RunOSINTTool(); err != nil {
+			fmt.Println("Error:", err)
+		}
+		fmt.Println("\nPress Enter to continue...")
+		fmt.Scanln()
+		utils.ClearScreen()
+		mainMenu()
+	case "4":
 		// Run dependency check
 		pkg.PrintDependencyStatus()
 		fmt.Println("\nPress Enter to continue...")
 		fmt.Scanln()
 		utils.ClearScreen()
 		mainMenu()
-	case "4":
+	case "5":
 		fmt.Println("Exiting GopherStrike. Goodbye!")
 		os.Exit(0)
 	default:
@@ -82,6 +92,11 @@ func main() {
 	// Check for logs directory at startup
 	if err := os.MkdirAll("logs", 0755); err != nil {
 		fmt.Printf("Warning: Failed to create logs directory: %v\n", err)
+	}
+
+	// Create OSINT logs directory
+	if err := os.MkdirAll("logs/osint", 0755); err != nil {
+		fmt.Printf("Warning: Failed to create OSINT logs directory: %v\n", err)
 	}
 
 	mainMenu()
