@@ -2,6 +2,7 @@ package main
 
 import (
 	"GopherStrike/pkg" // Import the pkg package to access exported functions
+	"GopherStrike/pkg/tools"
 	"GopherStrike/utils"
 	"fmt"
 	"os"
@@ -28,21 +29,30 @@ func mainMenu() {
 	fmt.Println("1. Port Scanner")
 	fmt.Println("2. Subdomain Scanner")
 	fmt.Println("3. OSINT & Vulnerability Tool")
-	fmt.Println("4. Host & Subdomain Resolver")
-	fmt.Println("5. Check Dependencies")
-	fmt.Println("6. Exit")
+	fmt.Println("4. Web Application Security Scanner")
+	fmt.Println("5. S3 Bucket Scanner")
+	fmt.Println("6. Email Harvester")
+	fmt.Println("7. Directory Bruteforcer")
+	fmt.Println("8. Report Generator")
+	fmt.Println("9. Host & Subdomain Resolver")
+	fmt.Println("10. Check Dependencies")
+	fmt.Println("11. Exit")
 
-	var choice string
-	fmt.Print("\nSelect a tool: ")
-	if _, err := fmt.Scanln(&choice); err != nil {
-		fmt.Println("Error reading input:", err)
+	// Get user input
+	fmt.Printf("\n%s: ", "Enter your choice")
+	var choice int
+	_, err := fmt.Scanf("%d", &choice)
+	fmt.Scanln() // Consume the newline
+
+	if err != nil {
+		fmt.Println("Invalid choice. Please try again.")
 		utils.ClearScreen()
 		mainMenu()
 		return
 	}
 
 	switch choice {
-	case "1":
+	case 1:
 		// Use the properly exported function from the pkg package
 		if err := pkg.RunNmapScannerWithPrivCheck(); err != nil {
 			fmt.Println("Error:", err)
@@ -51,7 +61,7 @@ func mainMenu() {
 		fmt.Scanln() // Ignoring error here is fine for user interaction
 		utils.ClearScreen()
 		mainMenu() // Return to main menu after tool completes
-	case "2":
+	case 2:
 		// Run subdomain scanner
 		if err := pkg.RunSubdomainScannerWithCheck(); err != nil {
 			fmt.Println("Error:", err)
@@ -60,7 +70,7 @@ func mainMenu() {
 		fmt.Scanln()
 		utils.ClearScreen()
 		mainMenu()
-	case "3":
+	case 3:
 		// Run OSINT tool
 		if err := pkg.RunOSINTTool(); err != nil {
 			fmt.Println("Error:", err)
@@ -69,7 +79,52 @@ func mainMenu() {
 		fmt.Scanln()
 		utils.ClearScreen()
 		mainMenu()
-	case "4":
+	case 4:
+		// Call the web vulnerability scanner
+		if err := pkg.RunWebVulnScanner(); err != nil {
+			fmt.Println("Error:", err)
+		}
+		fmt.Println("\nPress Enter to continue...")
+		fmt.Scanln()
+		utils.ClearScreen()
+		mainMenu()
+	case 5:
+		// Call the S3 bucket scanner
+		if err := tools.RunS3Scanner(); err != nil {
+			fmt.Println("Error:", err)
+		}
+		fmt.Println("\nPress Enter to continue...")
+		fmt.Scanln()
+		utils.ClearScreen()
+		mainMenu()
+	case 6:
+		// Call the email harvester
+		if err := tools.RunEmailHarvester(); err != nil {
+			fmt.Println("Error:", err)
+		}
+		fmt.Println("\nPress Enter to continue...")
+		fmt.Scanln()
+		utils.ClearScreen()
+		mainMenu()
+	case 7:
+		// Call the directory bruteforcer
+		if err := tools.RunDirBruteforcer(); err != nil {
+			fmt.Println("Error:", err)
+		}
+		fmt.Println("\nPress Enter to continue...")
+		fmt.Scanln()
+		utils.ClearScreen()
+		mainMenu()
+	case 8:
+		// Call the report generator
+		if err := tools.RunReportingTools(); err != nil {
+			fmt.Println("Error:", err)
+		}
+		fmt.Println("\nPress Enter to continue...")
+		fmt.Scanln()
+		utils.ClearScreen()
+		mainMenu()
+	case 9:
 		// Run host & subdomain resolver
 		if err := pkg.RunHostResolver(); err != nil {
 			fmt.Println("Error:", err)
@@ -78,18 +133,18 @@ func mainMenu() {
 		fmt.Scanln()
 		utils.ClearScreen()
 		mainMenu()
-	case "5":
+	case 10:
 		// Run dependency check
 		pkg.PrintDependencyStatus()
 		fmt.Println("\nPress Enter to continue...")
 		fmt.Scanln()
 		utils.ClearScreen()
 		mainMenu()
-	case "6":
+	case 11:
 		fmt.Println("Exiting GopherStrike. Goodbye!")
 		os.Exit(0)
 	default:
-		fmt.Println("Invalid choice, please try again")
+		fmt.Println("Invalid choice. Please try again.")
 		utils.ClearScreen()
 		mainMenu()
 	}
@@ -114,5 +169,18 @@ func main() {
 		fmt.Printf("Warning: Failed to create resolver logs directory: %v\n", err)
 	}
 
-	mainMenu()
+	// Create webvuln logs directory
+	if err := os.MkdirAll("logs/webvuln", 0755); err != nil {
+		fmt.Printf("Warning: Failed to create webvuln logs directory: %v\n", err)
+	}
+
+	// Try to use the TUI menu, fall back to text menu if there's an error
+	if err := pkg.RunTerminalMenu(); err != nil {
+		fmt.Printf("Warning: Could not start terminal UI: %v\n", err)
+		fmt.Println("Falling back to text-based menu...")
+		fmt.Println("Press Enter to continue...")
+		fmt.Scanln()
+		utils.ClearScreen()
+		mainMenu()
+	}
 }
