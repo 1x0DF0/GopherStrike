@@ -174,13 +174,6 @@ func main() {
 		fmt.Printf("Warning: Failed to create webvuln logs directory: %v\n", err)
 	}
 
-	// Try to use the TUI menu, fall back to text menu if there's an error
-	if err := pkg.RunTerminalMenu(); err != nil {
-		fmt.Printf("Warning: Could not start terminal UI: %v\n", err)
-		fmt.Println("Falling back to text-based menu...")
-		fmt.Println("Press Enter to continue...")
-		fmt.Scanln()
-		utils.ClearScreen()
-		mainMenu()
-	}
+	// Use the text-based menu directly
+	mainMenu()
 }
