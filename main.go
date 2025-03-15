@@ -28,8 +28,9 @@ func mainMenu() {
 	fmt.Println("1. Port Scanner")
 	fmt.Println("2. Subdomain Scanner")
 	fmt.Println("3. OSINT & Vulnerability Tool")
-	fmt.Println("4. Check Dependencies")
-	fmt.Println("5. Exit")
+	fmt.Println("4. Host & Subdomain Resolver")
+	fmt.Println("5. Check Dependencies")
+	fmt.Println("6. Exit")
 
 	var choice string
 	fmt.Print("\nSelect a tool: ")
@@ -69,13 +70,22 @@ func mainMenu() {
 		utils.ClearScreen()
 		mainMenu()
 	case "4":
+		// Run host & subdomain resolver
+		if err := pkg.RunHostResolver(); err != nil {
+			fmt.Println("Error:", err)
+		}
+		fmt.Println("\nPress Enter to continue...")
+		fmt.Scanln()
+		utils.ClearScreen()
+		mainMenu()
+	case "5":
 		// Run dependency check
 		pkg.PrintDependencyStatus()
 		fmt.Println("\nPress Enter to continue...")
 		fmt.Scanln()
 		utils.ClearScreen()
 		mainMenu()
-	case "5":
+	case "6":
 		fmt.Println("Exiting GopherStrike. Goodbye!")
 		os.Exit(0)
 	default:
@@ -97,6 +107,11 @@ func main() {
 	// Create OSINT logs directory
 	if err := os.MkdirAll("logs/osint", 0755); err != nil {
 		fmt.Printf("Warning: Failed to create OSINT logs directory: %v\n", err)
+	}
+
+	// Create resolver logs directory
+	if err := os.MkdirAll("logs/resolver", 0755); err != nil {
+		fmt.Printf("Warning: Failed to create resolver logs directory: %v\n", err)
 	}
 
 	mainMenu()
