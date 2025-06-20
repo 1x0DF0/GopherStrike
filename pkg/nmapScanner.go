@@ -2,12 +2,14 @@
 package pkg
 
 import (
+	"GopherStrike/pkg/security"
+	"GopherStrike/pkg/validator"
 	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 )
 
 // CheckRoot determines if the program is running with elevated privileges
@@ -37,8 +39,14 @@ func RunNmapScannerWithPrivCheck() error {
 
 				// Get IP target first since osascript won't pass stdin
 				fmt.Print("Enter target IP: ")
-				var targetIP string
-				fmt.Scanln(&targetIP)
+				var targetIPInput string
+				fmt.Scanln(&targetIPInput)
+				
+				// Validate IP address to prevent injection
+				targetIP, err := validator.ValidateIP(targetIPInput)
+				if err != nil {
+					return fmt.Errorf("invalid IP address: %w", err)
+				}
 
 				// Get port range
 				fmt.Println("\nSelect port range:")
@@ -53,12 +61,22 @@ func RunNmapScannerWithPrivCheck() error {
 				var portArgs string
 				if portChoice == "4" {
 					fmt.Print("Enter start port: ")
-					var startPort string
-					fmt.Scanln(&startPort)
+					var startPortInput string
+					fmt.Scanln(&startPortInput)
 
 					fmt.Print("Enter end port: ")
-					var endPort string
-					fmt.Scanln(&endPort)
+					var endPortInput string
+					fmt.Scanln(&endPortInput)
+					
+					// Validate ports
+					startPort, err := validator.ValidatePort(startPortInput)
+					if err != nil {
+						return fmt.Errorf("invalid start port: %w", err)
+					}
+					endPort, err := validator.ValidatePort(endPortInput)
+					if err != nil {
+						return fmt.Errorf("invalid end port: %w", err)
+					}
 
 					portArgs = fmt.Sprintf("--port-range %s %s", startPort, endPort)
 				} else {
@@ -72,13 +90,34 @@ func RunNmapScannerWithPrivCheck() error {
 					fmt.Printf("Warning: Failed to create logs directory: %v\n", err)
 				}
 
-				cmd := exec.Command("osascript", "-e",
-					fmt.Sprintf(`do shell script "%s %s --target %s %s" with administrator privileges`,
-						absVenvPath, scriptPath, targetIP, portArgs))
-				cmd.Stdout = os.Stdout
-				cmd.Stderr = os.Stderr
-
-				if err := cmd.Run(); err != nil {
+				// Use secure command execution
+				pem := security.NewPrivilegeEscalationManager()
+				cmdArgs := []string{scriptPath, "--target", targetIP}
+				
+				// Add port arguments safely
+				if strings.Contains(portArgs, "--port-range") {
+					parts := strings.Fields(portArgs)
+					for _, part := range parts {
+						if part != "" {
+							cmdArgs = append(cmdArgs, part)
+						}
+					}
+				} else if strings.Contains(portArgs, "--port-choice") {
+					parts := strings.Fields(portArgs)
+					for _, part := range parts {
+						if part != "" {
+							cmdArgs = append(cmdArgs, part)
+						}
+					}
+				}
+				
+				options := security.SecureCommandOptions{
+					Timeout:         5 * time.Minute,
+					AllowedCommands: []string{"python3", "python"},
+					DisableShell:    true,
+				}
+				
+				if err := pem.ExecuteWithElevatedPrivileges(absVenvPath, cmdArgs, options); err != nil {
 					return fmt.Errorf("error running with admin privileges: %w", err)
 				}
 
@@ -106,11 +145,14 @@ func RunNmapScannerWithPrivCheck() error {
 			}
 
 			fmt.Println("Launching with admin privileges...")
-			cmd := exec.Command("osascript", "-e", fmt.Sprintf(`do shell script "python3 %s" with administrator privileges`, scriptPath))
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-
-			err = cmd.Run()
+			pem := security.NewPrivilegeEscalationManager()
+			options := security.SecureCommandOptions{
+				Timeout:         5 * time.Minute,
+				AllowedCommands: []string{"python3", "python"},
+				DisableShell:    true,
+			}
+			
+			err = pem.ExecuteWithElevatedPrivileges("python3", []string{scriptPath}, options)
 			if err != nil {
 				// Provide specific advice for common errors
 				if strings.Contains(err.Error(), "No module named") {
@@ -122,31 +164,31 @@ func RunNmapScannerWithPrivCheck() error {
 			}
 			return nil
 		} else if runtime.GOOS == "linux" {
-			// Try pkexec first on Linux
-			if _, err := exec.LookPath("pkexec"); err == nil {
-				scriptPath, err := filepath.Abs("pkg/tools/NmapScript.py")
-				if err != nil {
-					return fmt.Errorf("error getting absolute path: %w", err)
-				}
-
-				venvPythonPath := "./.venv/bin/python3"
-				pythonPath := "python3"
-				if _, err := os.Stat(venvPythonPath); err == nil {
-					absVenvPath, _ := filepath.Abs(venvPythonPath)
-					pythonPath = absVenvPath
-				}
-
-				fmt.Println("Launching with admin privileges...")
-				cmd := exec.Command("pkexec", pythonPath, scriptPath)
-				cmd.Stdout = os.Stdout
-				cmd.Stderr = os.Stderr
-				cmd.Stdin = os.Stdin
-
-				if err := cmd.Run(); err != nil {
-					return fmt.Errorf("error running with pkexec: %w", err)
-				}
-				return nil
+			// Use secure privilege escalation for Linux
+			scriptPath, err := filepath.Abs("pkg/tools/NmapScript.py")
+			if err != nil {
+				return fmt.Errorf("error getting absolute path: %w", err)
 			}
+
+			venvPythonPath := "./.venv/bin/python3"
+			pythonPath := "python3"
+			if _, err := os.Stat(venvPythonPath); err == nil {
+				absVenvPath, _ := filepath.Abs(venvPythonPath)
+				pythonPath = absVenvPath
+			}
+
+			fmt.Println("Launching with admin privileges...")
+			pem := security.NewPrivilegeEscalationManager()
+			options := security.SecureCommandOptions{
+				Timeout:         5 * time.Minute,
+				AllowedCommands: []string{"python3", "python"},
+				DisableShell:    true,
+			}
+			
+			if err := pem.ExecuteWithElevatedPrivileges(pythonPath, []string{scriptPath}, options); err != nil {
+				return fmt.Errorf("error running with elevated privileges: %w", err)
+			}
+			return nil
 
 			// Fallback to terminal sudo method
 			fmt.Println("Please run from terminal: sudo go run main.go")
@@ -158,13 +200,15 @@ func RunNmapScannerWithPrivCheck() error {
 				return fmt.Errorf("error getting absolute path: %w", err)
 			}
 
-			// Use PowerShell to run as admin
-			cmd := exec.Command("powershell", "Start-Process", "python",
-				"-ArgumentList", scriptPath, "-Verb", "RunAs")
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-
-			if err := cmd.Run(); err != nil {
+			// Use secure privilege escalation for Windows
+			pem := security.NewPrivilegeEscalationManager()
+			options := security.SecureCommandOptions{
+				Timeout:         5 * time.Minute,
+				AllowedCommands: []string{"python", "python3"},
+				DisableShell:    true,
+			}
+			
+			if err := pem.ExecuteWithElevatedPrivileges("python", []string{scriptPath}, options); err != nil {
 				return fmt.Errorf("error running with admin privileges: %w", err)
 			}
 			return nil
@@ -196,43 +240,20 @@ func RunNmapScannerWithPrivCheck() error {
 		return fmt.Errorf("error getting working directory: %w", err)
 	}
 
-	// For Darwin/macOS, use a temporary script to run with sudo
-	if runtime.GOOS == "darwin" {
-		// Create a temporary script that will run the Python script with the correct environment
-		tempScript := filepath.Join(workDir, "run_scanner.sh")
-		scriptContent := fmt.Sprintf(`#!/bin/bash
-cd "%s"
-%s "%s" "$@"
-`, workDir, pythonToUse, "pkg/tools/NmapScript.py")
-
-		if err := os.WriteFile(tempScript, []byte(scriptContent), 0755); err != nil {
-			return fmt.Errorf("error creating temporary script: %w", err)
-		}
-		defer func(name string) {
-			if err := os.Remove(name); err != nil {
-				fmt.Printf("Warning: Failed to remove temporary script: %v\n", err)
-			}
-		}(tempScript)
-
-		// Run the script with sudo
-		cmd := exec.Command("sudo", tempScript)
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
-
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("error running port scanner: %w", err)
-		}
-	} else {
-		// For other platforms, run directly
-		cmd := exec.Command(pythonToUse, "pkg/tools/NmapScript.py")
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
-
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("error running port scanner: %w", err)
-		}
+	// Use secure command execution for all platforms
+	scriptPath := "pkg/tools/NmapScript.py"
+	
+	// Use secure privilege escalation
+	pem := security.NewPrivilegeEscalationManager()
+	options := security.SecureCommandOptions{
+		Timeout:            5 * time.Minute,
+		WorkingDirectory:   workDir,
+		AllowedCommands:    []string{"python3", "python"},
+		DisableShell:       true,
+	}
+	
+	if err := pem.ExecuteWithElevatedPrivileges(pythonToUse, []string{scriptPath}, options); err != nil {
+		return fmt.Errorf("error running port scanner: %w", err)
 	}
 
 	return nil

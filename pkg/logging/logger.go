@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -120,8 +121,8 @@ func (l *Logger) AddFileHandler(filePath string, level LogLevel) error {
 		return fmt.Errorf("failed to create log directory: %w", err)
 	}
 
-	// Open the log file
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	// Open the log file with secure permissions (owner read/write only)
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 	if err != nil {
 		return fmt.Errorf("failed to open log file: %w", err)
 	}
@@ -199,6 +200,9 @@ func (l *Logger) log(level LogLevel, format string, args ...interface{}) {
 
 	// Format the message
 	msg := fmt.Sprintf(format, args...)
+	
+	// Sanitize the message to remove sensitive data
+	msg = sanitizeLogMessage(msg)
 
 	// Get source information
 	source := ""
@@ -267,6 +271,48 @@ func init() {
 			log.Printf("Warning: Failed to create error log file for %s: %v", module, err)
 		}
 	}
+}
+
+// sanitizeLogMessage removes sensitive information from log messages
+func sanitizeLogMessage(message string) string {
+	// List of patterns that might contain sensitive data
+	sensitivePatterns := map[string]string{
+		// API Keys - replace with masked version
+		`api[_-]?key[s]?[\s=:]+['"]?([a-zA-Z0-9]{20,})['"]?`: "api_key=***REDACTED***",
+		`token[s]?[\s=:]+['"]?([a-zA-Z0-9]{20,})['"]?`:              "token=***REDACTED***",
+		`secret[s]?[\s=:]+['"]?([a-zA-Z0-9]{20,})['"]?`:             "secret=***REDACTED***",
+		
+		// Passwords
+		`password[s]?[\s=:]+['"]?([^\s'"]+)['"]?`: "password=***REDACTED***",
+		`passwd[s]?[\s=:]+['"]?([^\s'"]+)['"]?`:   "passwd=***REDACTED***",
+		`pwd[\s=:]+['"]?([^\s'"]+)['"]?`:         "pwd=***REDACTED***",
+		
+		// Common credential patterns
+		`Authorization[\s=:]+Bearer[\s]+([a-zA-Z0-9._-]+)`: "Authorization: Bearer ***REDACTED***",
+		`Basic[\s]+([a-zA-Z0-9+/]+=*)`:                     "Basic ***REDACTED***",
+		
+		// Database connection strings
+		`(mysql|postgres|mongodb)://[^\s@]+:[^\s@]+@`: "$1://***REDACTED***@",
+		
+		// SSH keys
+		`-----BEGIN.*PRIVATE KEY-----[\s\S]*-----END.*PRIVATE KEY-----`: "***SSH_PRIVATE_KEY_REDACTED***",
+		
+		// Credit card numbers (basic pattern)
+		`\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3[0-9]{13}|6(?:011|5[0-9]{2})[0-9]{12})\b`: "***CARD_NUMBER_REDACTED***",
+		
+		// Email addresses in some contexts (optional, might be too aggressive)
+		// `\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b`: "***EMAIL_REDACTED***",
+	}
+	
+	result := message
+	for pattern, replacement := range sensitivePatterns {
+		if matched, _ := regexp.MatchString(pattern, result); matched {
+			re := regexp.MustCompile(pattern)
+			result = re.ReplaceAllString(result, replacement)
+		}
+	}
+	
+	return result
 }
 
 // GetModuleLogger returns a logger for a specific module

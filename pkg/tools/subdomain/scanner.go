@@ -264,8 +264,8 @@ func saveJSONResults(scanCtx *ScanContext, result tools.ScanResult, filename str
 		return err
 	}
 
-	// Write to file
-	return os.WriteFile(filename, jsonData, 0644)
+	// Write to file with secure permissions
+	return os.WriteFile(filename, jsonData, 0600)
 }
 
 // saveCSVResults saves the results in CSV format for spreadsheet import

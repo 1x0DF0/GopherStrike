@@ -2,6 +2,8 @@
 package webvuln
 
 import (
+	"GopherStrike/pkg/errors"
+	"GopherStrike/pkg/validator"
 	"bufio"
 	"encoding/json"
 	"fmt"
@@ -117,23 +119,30 @@ func getTargetDetails() (ScanTarget, error) {
 	fmt.Print("\n[?] Enter target URL (e.g., https://example.com): ")
 	urlStr, err := reader.ReadString('\n')
 	if err != nil {
-		return target, err
+		return target, errors.Wrap(err, errors.UserError, "Failed to read URL input")
 	}
 
-	target.URL = strings.TrimSpace(urlStr)
-
-	// Validate URL format
-	if !strings.HasPrefix(target.URL, "http://") && !strings.HasPrefix(target.URL, "https://") {
+	urlStr = strings.TrimSpace(urlStr)
+	
+	// Add scheme if missing
+	if !strings.HasPrefix(urlStr, "http://") && !strings.HasPrefix(urlStr, "https://") {
 		fmt.Print("[!] URL should start with http:// or https://. Use https:// ? (Y/n): ")
 		answer, _ := reader.ReadString('\n')
 		answer = strings.TrimSpace(strings.ToLower(answer))
 
 		if answer == "" || answer == "y" || answer == "yes" {
-			target.URL = "https://" + target.URL
+			urlStr = "https://" + urlStr
 		} else {
-			target.URL = "http://" + target.URL
+			urlStr = "http://" + urlStr
 		}
 	}
+	
+	// Validate URL using secure validator
+	validatedURL, err := validator.ValidateURL(urlStr)
+	if err != nil {
+		return target, errors.ValidationFailed("URL", err.Error())
+	}
+	target.URL = validatedURL
 
 	// HTTP method
 	fmt.Print("[?] HTTP method to use (GET/POST) [default: GET]: ")

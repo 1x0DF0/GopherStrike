@@ -3,6 +3,7 @@ package subdomain
 
 import (
 	"GopherStrike/pkg/tools"
+	"GopherStrike/pkg/validator"
 	"bufio"
 	"fmt"
 	"os"
@@ -36,16 +37,10 @@ func GetDomainInput() (string, error) {
 			return "", fmt.Errorf("error reading domain: %v", err)
 		}
 
-		// Clean the domain input
-		domain := CleanDomain(input)
-		if domain == "" {
-			fmt.Println("Error: Invalid domain provided. Please enter a valid domain name.")
-			continue
-		}
-
-		// Basic domain format validation
-		if !ValidateDomainFormat(domain) {
-			fmt.Println("Error: Invalid domain format. Please enter a valid domain name.")
+		// Validate and sanitize domain using secure validator
+		domain, err := validator.ValidateDomain(strings.TrimSpace(input))
+		if err != nil {
+			fmt.Printf("Error: %v\n", err)
 			continue
 		}
 
@@ -103,11 +98,7 @@ func GetWordlistPath() (string, error) {
 		}
 
 		wordlistPath = strings.TrimSpace(wordlistPath)
-		if wordlistPath == "" {
-			fmt.Println("Error: Wordlist path cannot be empty.")
-			continue
-		}
-
+		
 		// Expand home directory if using ~
 		expandedPath, err := ExpandHomeDir(wordlistPath)
 		if err != nil {
@@ -115,10 +106,16 @@ func GetWordlistPath() (string, error) {
 			continue
 		}
 		wordlistPath = expandedPath
-
-		// Check if the file exists
-		if !FileExists(wordlistPath) {
-			fmt.Printf("Error: Wordlist not found at: %s\n", wordlistPath)
+		
+		// Validate file path using secure validator
+		fileValidator := &validator.FilePathValidator{
+			MustExist: true,
+			AllowedExts: []string{".txt", ".lst", ".wordlist", ""},
+			MaxSizeBytes: 100 * 1024 * 1024, // 100MB max
+		}
+		wordlistPath = fileValidator.Sanitize(wordlistPath)
+		if err := fileValidator.Validate(wordlistPath); err != nil {
+			fmt.Printf("Error: %v\n", err)
 			continue
 		}
 
@@ -249,16 +246,13 @@ func CustomizeOptions(options tools.ScanOptions) (tools.ScanOptions, error) {
 			break // Keep default
 		}
 
-		threads, err := strconv.Atoi(input)
-		if err != nil {
-			fmt.Println("Error: Invalid number. Please enter a number between 1 and 100.")
+		// Validate thread count
+		intValidator := &validator.IntegerValidator{Min: 1, Max: 100}
+		if err := intValidator.Validate(input); err != nil {
+			fmt.Printf("Error: %v\n", err)
 			continue
 		}
-
-		if threads < 1 || threads > 100 {
-			fmt.Println("Error: Thread count must be between 1 and 100.")
-			continue
-		}
+		threads, _ := strconv.Atoi(input)
 
 		options.Threads = threads
 		break
@@ -301,16 +295,13 @@ func CustomizeOptions(options tools.ScanOptions) (tools.ScanOptions, error) {
 			break // Keep default
 		}
 
-		timeout, err := strconv.Atoi(input)
-		if err != nil {
-			fmt.Println("Error: Invalid number. Please enter a number between 1 and 60.")
+		// Validate timeout
+		intValidator := &validator.IntegerValidator{Min: 1, Max: 60}
+		if err := intValidator.Validate(input); err != nil {
+			fmt.Printf("Error: %v\n", err)
 			continue
 		}
-
-		if timeout < 1 || timeout > 60 {
-			fmt.Println("Error: Timeout must be between 1 and 60 seconds.")
-			continue
-		}
+		timeout, _ := strconv.Atoi(input)
 
 		options.Timeout = timeout
 		break

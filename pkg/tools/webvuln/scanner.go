@@ -24,13 +24,29 @@ type Scanner struct {
 
 // NewScanner creates a new web vulnerability scanner
 func NewScanner(options ScanOptions) *Scanner {
-	// Set up HTTP client with reasonable defaults
+	// Set up HTTP client with secure defaults
 	transport := &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: options.IgnoreSSLErrors,
+			// Default to secure TLS validation
+			InsecureSkipVerify: false,
+			// Only allow insecure if explicitly requested AND user confirmed
+			MinVersion: tls.VersionTLS12, // Enforce minimum TLS 1.2
 		},
 		MaxIdleConns:    30,
 		IdleConnTimeout: 30 * time.Second,
+	}
+	
+	// Only disable TLS verification if explicitly requested
+	if options.IgnoreSSLErrors {
+		fmt.Println("WARNING: TLS certificate verification is disabled. This reduces security.")
+		fmt.Print("Are you sure you want to continue? (y/N): ")
+		var response string
+		fmt.Scanln(&response)
+		if strings.ToLower(response) == "y" || strings.ToLower(response) == "yes" {
+			transport.TLSClientConfig.InsecureSkipVerify = true
+		} else {
+			fmt.Println("Keeping TLS verification enabled for security.")
+		}
 	}
 
 	client := &http.Client{
