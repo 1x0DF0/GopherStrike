@@ -1,136 +1,141 @@
 # GopherStrike
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/gophers/artwork/master/gopher-side_color.png" alt="GopherStrike Logo" width="200"/>
-</p>
+A comprehensive red team security framework written in Go for penetration testing, vulnerability assessment, and OSINT operations.
 
-GopherStrike is a powerful red team framework written in Go, designed to provide comprehensive tools for offensive security operations. This framework supports various aspects of penetration testing, vulnerability assessment, and OSINT (Open Source Intelligence).
+## Features
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/yourusername/GopherStrike)](https://goreportcard.com/report/github.com/yourusername/GopherStrike)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/GopherStrike.svg)](https://github.com/yourusername/GopherStrike/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/GopherStrike.svg)](https://github.com/yourusername/GopherStrike/network)
-[![GitHub issues](https://img.shields.io/github/issues/yourusername/GopherStrike.svg)](https://github.com/yourusername/GopherStrike/issues)
+- **Port Scanner** - Network port scanning with nmap integration
+- **Subdomain Scanner** - Advanced subdomain enumeration
+- **OSINT & Vulnerability Tool** - Intelligence gathering and vulnerability identification
+- **Web Application Security Scanner** - Tests for XSS, SQL injection, and other web vulnerabilities
+- **S3 Bucket Scanner** - Identifies misconfigured AWS S3 buckets
+- **Email Harvester** - Collects email addresses associated with target domains
+- **Directory Bruteforcer** - Discovers hidden directories on web servers
+- **Report Generator** - Creates comprehensive security assessment reports
+- **Host & Subdomain Resolver** - DNS resolution and verification
+- **Dependencies Checker** - Verifies required tools installation
 
-## 🚀 Features
-
-### Current Features
-- **Command-Line Interface**: A simple and effective text-based menu for tool selection
-- **Port Scanner**: Scan and identify open ports on target systems
-- **Subdomain Scanner**: Discover subdomains associated with target domains
-- **OSINT & Vulnerability Tool**: Gather intelligence and identify vulnerabilities
-- **Web Application Security Scanner**: Detect security issues in web applications
-- **S3 Bucket Scanner**: Identify misconfigured S3 buckets
-- **Email Harvester**: Gather email addresses associated with a domain
-- **Directory Bruteforcer**: Discover hidden directories on web servers
-- **Report Generator**: Generate comprehensive security reports
-- **Host & Subdomain Resolver**: Resolve hostnames and subdomains
-
-### Planned Features
-- **Enhanced OSINT Capabilities**: More comprehensive information gathering from publicly available sources
-- **Advanced Vulnerability Scanners**: Additional scanners to identify security weaknesses
-- **Post-Exploitation Tools**: Integration with BitStrike for post-exploitation capabilities
-
-## 📋 Prerequisites
-
-Before installing GopherStrike, ensure you have the following prerequisites:
+## Requirements
 
 - Go 1.16 or higher
 - Git
-- For some tools, you may need additional dependencies:
-  - Nmap (for port scanning)
-  - SecLists (for wordlists)
+- Optional: nmap (for port scanning functionality)
+- Optional: SecLists (for enhanced wordlists)
 
-## 💻 Installation
-
-### From Source
+## Installation
 
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/GopherStrike.git
-
-# Navigate to the project directory
 cd GopherStrike
 
-# Build the project
-go build
+# Install dependencies
+go mod download
 
-# Run GopherStrike
+# Build the application
+go build -o GopherStrike main.go
+```
+
+## Usage
+
+Run the application:
+
+```bash
 ./GopherStrike
 ```
 
-### Using Go Install
+You'll be presented with a menu:
 
-```bash
-go install github.com/yourusername/GopherStrike@latest
+```
+===============================
+      GopherStrike Menu
+===============================
+1. Port Scanner
+2. Subdomain Scanner
+3. OSINT & Vulnerability Tool
+4. Web Application Security Scanner
+5. S3 Bucket Scanner
+6. Email Harvester
+7. Directory Bruteforcer
+8. Report Generator
+9. Host & Subdomain Resolver
+10. Dependencies Checker
+11. Exit
+===============================
+Enter your choice:
 ```
 
-## 🔧 Usage
+Select a tool by entering its number and follow the prompts.
 
-GopherStrike provides a text-based menu for easy tool selection:
+## Configuration
 
-1. Launch GopherStrike:
-   ```bash
-   ./GopherStrike
-   ```
+GopherStrike uses a JSON-based configuration system. Create a `config.json` file to customize settings:
 
-2. You'll see a menu with numbered options for each tool
-3. Enter the number corresponding to the tool you want to use
-4. Follow the on-screen instructions for each tool
-
-### Port Scanner
-
-The port scanner allows you to scan for open ports on a target system:
-
-```bash
-# Example usage through the menu
-1. Select option 1 (Port Scanner) from the main menu
-2. Enter the target IP or hostname
-3. Specify the port range or select a predefined scan type
+```json
+{
+  "general": {
+    "logLevel": "info",
+    "logFile": "logs/gopherstrike.log"
+  },
+  "network": {
+    "timeout": 30,
+    "maxConcurrency": 50,
+    "rateLimit": 100
+  },
+  "security": {
+    "verifySSL": true,
+    "useProxy": false
+  }
+}
 ```
 
-### Subdomain Scanner
+## Output
 
-Discover subdomains associated with a target domain:
+All scan results and logs are saved in the `logs/` directory:
+- JSON files for structured data
+- Text files for summaries
+- Optional CSV/HTML export formats
 
-```bash
-# Example usage through the menu
-1. Select option 2 (Subdomain Scanner) from the main menu
-2. Enter the target domain
-3. Choose the scanning method and options
+## Project Structure
+
+```
+GopherStrike/
+├── main.go                 # Entry point
+├── cmd/                    # Command implementations
+├── pkg/                    # Core packages
+│   ├── config/            # Configuration management
+│   ├── tools/             # Security tools
+│   ├── security/          # Security utilities
+│   └── ...                # Additional packages
+├── utils/                  # Utility functions
+└── logs/                   # Output directory
 ```
 
-### Web Application Security Scanner
+## Security Considerations
 
-Scan web applications for common security vulnerabilities:
+- Always obtain proper authorization before scanning targets
+- Use responsibly and ethically
+- Be aware of rate limiting to avoid disrupting services
+- Review logs for sensitive information before sharing
 
-```bash
-# Example usage through the menu
-1. Select option 4 (Web Application Security Scanner) from the main menu
-2. Enter the target URL
-3. Select the scan type and options
-```
+## Contributing
 
-## 🤝 Contributing
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-We welcome contributions from the community! Please check out our [Contributing Guidelines](CONTRIBUTING.md) for more information on how to get started.
+## License
 
-## 📜 License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-GopherStrike is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Disclaimer
 
-## 🙏 Acknowledgements
+This tool is for authorized security testing only. Users are responsible for complying with all applicable laws and regulations. The authors assume no liability for misuse or damage caused by this software.
 
-- The Go community for their amazing tools and libraries
-- All contributors who have helped make this project better
-- [SecLists](https://github.com/danielmiessler/SecLists) for providing comprehensive wordlists
+## Acknowledgments
 
-## ⚠️ Disclaimer
-
-GopherStrike is designed for legitimate security testing with proper authorization. Users are responsible for complying with applicable laws and regulations. The developers assume no liability for misuse or damage caused by this tool.
-
----
-
-If you find GopherStrike useful, please consider giving it a star ⭐ on GitHub!
-
-For questions, feedback, or issues, please open an issue on the GitHub repository.
+- Built with Go and the amazing Go community
+- Inspired by various security tools and frameworks
+- Thanks to all contributors and testers
