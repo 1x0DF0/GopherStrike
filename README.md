@@ -24,6 +24,8 @@ A comprehensive red team security framework written in Go for penetration testin
 
 ## Installation
 
+### Option 1: Quick Install (Recommended)
+
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/GopherStrike.git
@@ -34,6 +36,42 @@ go mod download
 
 # Build the application
 go build -o GopherStrike main.go
+
+# Install globally (run from anywhere)
+sudo ./install.sh
+```
+
+After installation, you can run GopherStrike from anywhere:
+```bash
+gopherstrike
+```
+
+### Option 2: Manual Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/GopherStrike.git
+cd GopherStrike
+
+# Install dependencies
+go mod download
+
+# Build the application
+go build -o GopherStrike main.go
+
+# Copy to system PATH (requires sudo)
+sudo cp GopherStrike /usr/local/bin/gopherstrike
+```
+
+### Option 3: User-only Installation
+
+```bash
+# Run the installer without sudo for user-only installation
+./install.sh
+
+# Add to PATH if needed
+echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.$(basename $SHELL)rc
+source ~/.$(basename $SHELL)rc
 ```
 
 ## Usage
@@ -41,6 +79,10 @@ go build -o GopherStrike main.go
 Run the application:
 
 ```bash
+# If installed globally
+gopherstrike
+
+# Or run locally
 ./GopherStrike
 ```
 
