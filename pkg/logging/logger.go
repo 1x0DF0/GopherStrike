@@ -257,7 +257,7 @@ func init() {
 	}
 
 	// Add file handlers for each module
-	modules := []string{"general", "portscan", "subdomain", "osint", "webvuln", "s3scan", "email", "dirbrute", "resolver"}
+	modules := []string{"general", "subdomain", "osint", "webvuln", "s3scan", "email", "dirbrute", "resolver"}
 
 	for _, module := range modules {
 		logPath := filepath.Join("logs", module, "activity.log")

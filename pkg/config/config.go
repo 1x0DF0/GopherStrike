@@ -85,21 +85,11 @@ type OutputConfig struct {
 
 // ToolsConfig contains tool-specific settings
 type ToolsConfig struct {
-	PortScanner     PortScannerConfig     `json:"port_scanner"`
 	SubdomainScanner SubdomainScannerConfig `json:"subdomain_scanner"`
 	WebVulnScanner  WebVulnScannerConfig  `json:"web_vuln_scanner"`
 	OSINTScanner    OSINTScannerConfig    `json:"osint_scanner"`
 }
 
-// PortScannerConfig contains port scanner settings
-type PortScannerConfig struct {
-	ScanTechnique   string   `json:"scan_technique"`    // SYN, TCP, UDP, etc.
-	ServiceDetection bool    `json:"service_detection"` // Enable service detection
-	OSDetection     bool     `json:"os_detection"`      // Enable OS detection
-	CommonPorts     []int    `json:"common_ports"`      // List of common ports
-	ExcludePorts    []int    `json:"exclude_ports"`     // Ports to exclude
-	NmapPath        string   `json:"nmap_path"`         // Path to nmap binary
-}
 
 // SubdomainScannerConfig contains subdomain scanner settings
 type SubdomainScannerConfig struct {
@@ -195,13 +185,6 @@ func (c *Config) LoadDefaults() {
 	}
 	
 	c.Tools = ToolsConfig{
-		PortScanner: PortScannerConfig{
-			ScanTechnique:    "SYN",
-			ServiceDetection: true,
-			OSDetection:      false,
-			CommonPorts:      []int{21, 22, 23, 25, 80, 443, 445, 3306, 3389, 8080},
-			ExcludePorts:     []int{},
-		},
 		SubdomainScanner: SubdomainScannerConfig{
 			DefaultWordlist: "",
 			ResolveIPs:      true,

@@ -1,0 +1,53 @@
+GopherStrike Comprehensive Testing
+=================================
+Started at: Tue Jun 24 08:31:02 PM EDT 2025
+
+[0;32m[PASS][0m Build Process
+
+[0;34mTesting Binary[0m
+=============
+[0;32m[PASS][0m Binary Existence
+[0;32m[PASS][0m Binary Permissions
+[0;32m[PASS][0m Binary Execution
+
+[0;34mTesting Directory Structure[0m
+===========================
+[0;32m[PASS][0m Directory (Log directory)
+[0;32m[PASS][0m Directory (Package directory)
+[0;32m[PASS][0m Directory (Utilities directory)
+
+[0;34mTesting Command Line Arguments[0m
+=============================
+[0;32m[PASS][0m Command: --help
+[0;32m[PASS][0m Command: -h
+[0;32m[PASS][0m Command: --version
+[0;32m[PASS][0m Command: -v
+[0;31m[FAIL][0m Command: --invalid-arg
+
+[0;34mTesting Input Validation[0m
+=======================
+[0;32m[PASS][0m Input Validation (Invalid option 0)
+[0;32m[PASS][0m Input Validation (Invalid option 12)
+[0;32m[PASS][0m Input Validation (Invalid option 999)
+[0;32m[PASS][0m Input Validation (Negative number)
+[0;32m[PASS][0m Input Validation (Non-numeric input)
+[0;32m[PASS][0m Input Validation (Decimal number)
+[0;32m[PASS][0m Input Validation (Whitespace only)
+[0;32m[PASS][0m Input Validation (Multiple numbers)
+[0;32m[PASS][0m Input Validation (Special characters)
+
+[0;34mTesting EOF Handling[0m
+===================
+[0;32m[PASS][0m EOF Handling (empty input)
+[0;32m[PASS][0m EOF Handling (no stdin)
+
+[0;34mTesting Interactive Tool Options[0m
+================================
+[1;33m[WARN][0m Tool 1 (Port Scanner)
+[1;33m[WARN][0m Tool 2 (Subdomain Scanner)
+[1;33m[WARN][0m Tool 3 (OSINT & Vulnerability Tool)
+[1;33m[WARN][0m Tool 4 (Web Application Security Scanner)
+[1;33m[WARN][0m Tool 5 (S3 Bucket Scanner)
+[1;33m[WARN][0m Tool 6 (Email Harvester)
+[1;33m[WARN][0m Tool 7 (Directory Bruteforcer)
+[1;33m[WARN][0m Tool 8 (Report Generator)

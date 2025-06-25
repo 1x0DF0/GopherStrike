@@ -154,32 +154,32 @@ func (m *Manager) Close() error {
 	return nil
 }
 
-// FileResource represents a managed file
-type FileResource struct {
+// ManagedFileResource represents a managed file
+type ManagedFileResource struct {
 	id   string
 	file *os.File
 }
 
-// NewFileResource creates a new file resource
-func NewFileResource(path string, flag int, perm os.FileMode) (*FileResource, error) {
+// NewManagedFileResource creates a new file resource
+func NewManagedFileResource(path string, flag int, perm os.FileMode) (*ManagedFileResource, error) {
 	file, err := os.OpenFile(path, flag, perm)
 	if err != nil {
 		return nil, err
 	}
 	
-	return &FileResource{
+	return &ManagedFileResource{
 		id:   fmt.Sprintf("file:%s:%d", path, time.Now().UnixNano()),
 		file: file,
 	}, nil
 }
 
 // ID returns the resource ID
-func (f *FileResource) ID() string {
+func (f *ManagedFileResource) ID() string {
 	return f.id
 }
 
 // Close closes the file
-func (f *FileResource) Close() error {
+func (f *ManagedFileResource) Close() error {
 	if f.file != nil {
 		return f.file.Close()
 	}
@@ -187,19 +187,19 @@ func (f *FileResource) Close() error {
 }
 
 // File returns the underlying file
-func (f *FileResource) File() *os.File {
+func (f *ManagedFileResource) File() *os.File {
 	return f.file
 }
 
-// HTTPClientResource represents a managed HTTP client
-type HTTPClientResource struct {
+// ManagedHTTPClient represents a managed HTTP client
+type ManagedHTTPClient struct {
 	id       string
 	client   *http.Client
 	transport *http.Transport
 }
 
 // NewHTTPClientResource creates a new HTTP client resource
-func NewHTTPClientResource(timeout time.Duration) *HTTPClientResource {
+func NewHTTPClientResource(timeout time.Duration) *ManagedHTTPClient {
 	transport := &http.Transport{
 		MaxIdleConns:        100,
 		MaxIdleConnsPerHost: 10,
@@ -217,7 +217,7 @@ func NewHTTPClientResource(timeout time.Duration) *HTTPClientResource {
 		Timeout:   timeout,
 	}
 	
-	return &HTTPClientResource{
+	return &ManagedHTTPClient{
 		id:        fmt.Sprintf("http_client:%d", time.Now().UnixNano()),
 		client:    client,
 		transport: transport,
@@ -225,12 +225,12 @@ func NewHTTPClientResource(timeout time.Duration) *HTTPClientResource {
 }
 
 // ID returns the resource ID
-func (h *HTTPClientResource) ID() string {
+func (h *ManagedHTTPClient) ID() string {
 	return h.id
 }
 
 // Close closes the HTTP client
-func (h *HTTPClientResource) Close() error {
+func (h *ManagedHTTPClient) Close() error {
 	if h.transport != nil {
 		h.transport.CloseIdleConnections()
 	}
@@ -238,7 +238,7 @@ func (h *HTTPClientResource) Close() error {
 }
 
 // Client returns the HTTP client
-func (h *HTTPClientResource) Client() *http.Client {
+func (h *ManagedHTTPClient) Client() *http.Client {
 	return h.client
 }
 
@@ -388,6 +388,6 @@ func WithHTTPClient(manager *Manager, timeout time.Duration, fn func(*http.Clien
 	client := NewHTTPClientResource(timeout)
 	
 	return WithResource(manager, client, func(r Resource) error {
-		return fn(r.(*HTTPClientResource).Client())
+		return fn(r.(*ManagedHTTPClient).Client())
 	})
 }

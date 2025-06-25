@@ -42,23 +42,13 @@ func DependencyCheck() map[string]string {
 		}
 	}
 
-	// Check nmap
-	if !checkCommandExists("nmap") {
-		if runtime.GOOS == "darwin" {
-			missing["nmap"] = "Install with: brew install nmap"
-		} else if runtime.GOOS == "linux" {
-			missing["nmap"] = "Install with: sudo apt install nmap"
-		} else if runtime.GOOS == "windows" {
-			missing["nmap"] = "Download and install from https://nmap.org/download.html"
-		}
-	}
 
 	// Check Python modules using multiple methods if Python is installed
 	if pythonInfo.Interpreter != "" {
 		// Try both module import check and pip list check for thoroughness
 
 		// Method 1: Direct import attempt
-		requiredModules := []string{"nmap", "scapy"}
+		requiredModules := []string{"scapy"}
 		for _, module := range requiredModules {
 			// Create a temporary check script
 			scriptPath := createModuleCheckScript(module)
@@ -225,9 +215,6 @@ func checkModuleInPip(pipCmd string, moduleName string) bool {
 
 	// Handle special module name differences between import and pip
 	pipModuleName := moduleName
-	if moduleName == "nmap" {
-		pipModuleName = "python-nmap"
-	}
 
 	return strings.Contains(string(output), pipModuleName)
 }
@@ -317,7 +304,7 @@ func CreateVirtualEnv() error {
 	} // Ignore errors
 
 	// Install required packages
-	installCmd := exec.Command(pipCmd, "install", "python-nmap", "scapy")
+	installCmd := exec.Command(pipCmd, "install", "scapy")
 	output, err = installCmd.CombinedOutput()
 
 	if err != nil {
@@ -350,7 +337,7 @@ func PrintDependencyStatus() {
 		}
 
 		// Special note for macOS users about Python modules
-		if runtime.GOOS == "darwin" && (missing["nmap"] != "" || missing["scapy"] != "") {
+		if runtime.GOOS == "darwin" && missing["scapy"] != "" {
 			fmt.Println("\nNote for macOS users: If your scanner is working despite these warnings,")
 			fmt.Println("you may have the modules installed in a different Python environment.")
 			fmt.Println("The scanner may be using a different Python interpreter than this checker.")
@@ -380,8 +367,7 @@ func PrintDependencyStatus() {
 				}
 
 				// Add option to continue anyway
-				if (len(stillMissing) == 1 && stillMissing["nmap"] == "") ||
-					(len(stillMissing) == 1 && stillMissing["scapy"] == "") {
+				if (len(stillMissing) == 1 && stillMissing["scapy"] == "") {
 					fmt.Println("\nWould you like to continue anyway? Your scanner might work if")
 					fmt.Println("the dependencies are installed in a different Python environment. (y/n)")
 					fmt.Scanln(&response)

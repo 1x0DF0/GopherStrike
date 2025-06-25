@@ -286,61 +286,47 @@ func (pem *PrivilegeEscalationManager) ExecuteWithElevatedPrivileges(command str
 
 // executeWithOSAScript executes with macOS osascript
 func (pem *PrivilegeEscalationManager) executeWithOSAScript(command string, args []string, options SecureCommandOptions) error {
-	// Build command array securely
-	fullCmd := append([]string{command}, args...)
-	
-	// Create the AppleScript command securely
-	// We use separate arguments instead of string concatenation
-	osascriptArgs := []string{
-		"-e",
-		fmt.Sprintf("do shell script %q with administrator privileges", strings.Join(fullCmd, " ")),
-	}
-	
-	secureCmd, err := NewSecureCommand("osascript", osascriptArgs, SecureCommandOptions{
-		Timeout:         options.Timeout,
-		AllowedCommands: []string{"osascript"},
-		DisableShell:    true,
-	})
-	
-	if err != nil {
-		return err
-	}
-	
-	return secureCmd.Run()
+	// osascript doesn't handle stdin/stdout properly for interactive programs
+	// Fall back to sudo for interactive commands
+	return pem.executeWithSudo(command, args, options)
 }
 
 // executeWithPkexec executes with Linux pkexec
 func (pem *PrivilegeEscalationManager) executeWithPkexec(command string, args []string, options SecureCommandOptions) error {
 	pkexecArgs := append([]string{command}, args...)
 	
-	secureCmd, err := NewSecureCommand("pkexec", pkexecArgs, SecureCommandOptions{
-		Timeout:         options.Timeout,
-		AllowedCommands: []string{"pkexec"},
-		DisableShell:    true,
-	})
+	// Create command directly with exec.Command for better stdin/stdout handling
+	cmd := exec.Command("pkexec", pkexecArgs...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	
-	if err != nil {
-		return err
+	// Set working directory if specified
+	if options.WorkingDirectory != "" {
+		cmd.Dir = options.WorkingDirectory
 	}
 	
-	return secureCmd.Run()
+	// Run the command
+	return cmd.Run()
 }
 
 // executeWithSudo executes with sudo
 func (pem *PrivilegeEscalationManager) executeWithSudo(command string, args []string, options SecureCommandOptions) error {
 	sudoArgs := append([]string{command}, args...)
 	
-	secureCmd, err := NewSecureCommand("sudo", sudoArgs, SecureCommandOptions{
-		Timeout:         options.Timeout,
-		AllowedCommands: []string{"sudo"},
-		DisableShell:    true,
-	})
+	// Create command directly with exec.Command for better stdin/stdout handling
+	cmd := exec.Command("sudo", sudoArgs...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 	
-	if err != nil {
-		return err
+	// Set working directory if specified
+	if options.WorkingDirectory != "" {
+		cmd.Dir = options.WorkingDirectory
 	}
 	
-	return secureCmd.Run()
+	// Run the command
+	return cmd.Run()
 }
 
 // executeWithPowerShell executes with Windows PowerShell

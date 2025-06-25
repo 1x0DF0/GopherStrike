@@ -26,10 +26,16 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BINARY_PATH="$SCRIPT_DIR/GopherStrike"
 
-# Check if binary exists
-if [[ ! -f "$BINARY_PATH" ]]; then
-    echo -e "${RED}Error: GopherStrike binary not found at $BINARY_PATH${NC}"
-    echo "Please build the binary first with: go build -o GopherStrike"
+# Check if binary exists (try both uppercase and lowercase)
+if [[ -f "$BINARY_PATH" ]]; then
+    # Found uppercase version
+    :
+elif [[ -f "$SCRIPT_DIR/gopherstrike" ]]; then
+    # Found lowercase version
+    BINARY_PATH="$SCRIPT_DIR/gopherstrike"
+else
+    echo -e "${RED}Error: GopherStrike binary not found${NC}"
+    echo "Please build the binary first with: ./build.sh or go build -o GopherStrike"
     exit 1
 fi
 

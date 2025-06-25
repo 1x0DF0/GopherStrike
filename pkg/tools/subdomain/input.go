@@ -6,6 +6,7 @@ import (
 	"GopherStrike/pkg/validator"
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"runtime"
 	"strconv"
@@ -34,6 +35,9 @@ func GetDomainInput() (string, error) {
 		fmt.Print("Enter target domain (e.g., example.com): ")
 		input, err := reader.ReadString('\n')
 		if err != nil {
+			if err == io.EOF {
+				return "", fmt.Errorf("no input provided (EOF)")
+			}
 			return "", fmt.Errorf("error reading domain: %v", err)
 		}
 
@@ -94,6 +98,9 @@ func GetWordlistPath() (string, error) {
 		fmt.Print("\nEnter full path to wordlist: ")
 		wordlistPath, err := reader.ReadString('\n')
 		if err != nil {
+			if err == io.EOF {
+				return "", fmt.Errorf("no input provided (EOF)")
+			}
 			return "", fmt.Errorf("error reading path: %v", err)
 		}
 
@@ -226,6 +233,9 @@ func CustomizeOptions(options tools.ScanOptions) (tools.ScanOptions, error) {
 	fmt.Print("\nCustomize scan options? (y/n): ")
 	input, err := reader.ReadString('\n')
 	if err != nil {
+		if err == io.EOF {
+			return options, fmt.Errorf("no input provided (EOF)")
+		}
 		return options, fmt.Errorf("error reading input: %v", err)
 	}
 

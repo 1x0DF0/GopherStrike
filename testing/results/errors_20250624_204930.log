@@ -1,0 +1,8 @@
+Tool 1 (Port Scanner): Tool executed but reported errors: Error: Root privileges are required for nmap port scanning.
+Tool 2 (Subdomain Scanner): Tool executed but reported errors: Enter target domain (e.g., example.com): Error: no input provided (EOF)
+Tool 3 (OSINT & Vulnerability Tool): Tool timed out after 30 seconds
+Tool 4 (Web Application Security Scanner): Tool executed but reported errors: [?] Enter target URL (e.g., https://example.com): Error: Failed to read URL input: EOF
+Tool 5 (S3 Bucket Scanner): Tool executed but reported errors: [?] Enter target domain (e.g., example.com): [-] Error running S3 bucket scanner: target domain is required
+Tool 6 (Email Harvester): Tool executed but reported errors: [?] Enter target domain (e.g., example.com): [-] Error running email harvester: target domain is required
+Tool 7 (Directory Bruteforcer): Tool executed but reported errors: [?] Enter target URL (e.g., https://example.com): [-] Error running directory bruteforcer: target URL is required
+Tool 8 (Report Generator): Tool timed out after 30 seconds
