@@ -28,6 +28,15 @@ var (
     ╚══════╝ ╚═════╝ ╚═════╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝    ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
     `
 
+	portScannerArt = `
+    ██████╗  ██████╗ ██████╗ ████████╗    ███████╗ ██████╗ █████╗ ███╗   ██╗███╗   ██╗███████╗██████╗ 
+    ██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝    ██╔════╝██╔════╝██╔══██╗████╗  ██║████╗  ██║██╔════╝██╔══██╗
+    ██████╔╝██║   ██║██████╔╝   ██║       ███████╗██║     ███████║██╔██╗ ██║██╔██╗ ██║█████╗  ██████╔╝
+    ██╔═══╝ ██║   ██║██╔══██╗   ██║       ╚════██║██║     ██╔══██║██║╚██╗██║██║╚██╗██║██╔══╝  ██╔══██╗
+    ██║     ╚██████╔╝██║  ██║   ██║       ███████║╚██████╗██║  ██║██║ ╚████║██║ ╚████║███████╗██║  ██║
+    ╚═╝      ╚═════╝ ╚═╝  ╚═╝   ╚═╝       ╚══════╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝╚═╝  ╚═╝
+    `
+
 	osintArt = `
      ██████╗ ███████╗██╗███╗   ██╗████████╗    ████████╗ ██████╗  ██████╗ ██╗     
     ██╔═══██╗██╔════╝██║████╗  ██║╚══██╔══╝    ╚══██╔══╝██╔═══██╗██╔═══██╗██║     
@@ -122,15 +131,16 @@ func mainMenu() {
 	fmt.Println("\nAvailable Tools:")
 	fmt.Println("================")
 	fmt.Println("1. Subdomain Scanner")
-	fmt.Println("2. OSINT & Vulnerability Tool")
-	fmt.Println("3. Web Application Security Scanner")
-	fmt.Println("4. S3 Bucket Scanner")
-	fmt.Println("5. Email Harvester")
-	fmt.Println("6. Directory Bruteforcer")
-	fmt.Println("7. Report Generator")
-	fmt.Println("8. Host & Subdomain Resolver")
-	fmt.Println("9. Check Dependencies")
-	fmt.Println("10. Exit")
+	fmt.Println("2. Port Scanner")
+	fmt.Println("3. OSINT & Vulnerability Tool")
+	fmt.Println("4. Web Application Security Scanner")
+	fmt.Println("5. S3 Bucket Scanner")
+	fmt.Println("6. Email Harvester")
+	fmt.Println("7. Directory Bruteforcer")
+	fmt.Println("8. Report Generator")
+	fmt.Println("9. Host & Subdomain Resolver")
+	fmt.Println("10. Check Dependencies")
+	fmt.Println("11. Exit")
 
 	// Get user input
 	fmt.Printf("\n%s: ", "Enter your choice")
@@ -170,6 +180,16 @@ func mainMenu() {
 		fmt.Println("\nRunning Subdomain Scanner...")
 		// Run subdomain scanner
 		if err := pkg.RunSubdomainScannerWithCheck(); err != nil {
+			fmt.Println("Error:", err)
+		}
+		utils.ClearScreen()
+		mainMenu()
+	case 2:
+		utils.ClearScreen()
+		fmt.Println(portScannerArt)
+		fmt.Println("\nRunning Port Scanner...")
+		// Run port scanner
+		if err := pkg.RunPortScanner(); err != nil {
 			fmt.Println("Error:", err)
 		}
 		utils.ClearScreen()
@@ -276,14 +296,15 @@ func showHelp() {
 	fmt.Println("\nAvailable Tools in Interactive Mode:")
 	fmt.Println("=====================================")
 	fmt.Println("1. Subdomain Scanner         - Discover subdomains of target domains")
-	fmt.Println("2. OSINT & Vulnerability     - Open Source Intelligence gathering")
-	fmt.Println("3. Web Application Scanner   - Web vulnerability assessment")
-	fmt.Println("4. S3 Bucket Scanner         - AWS S3 bucket enumeration")
-	fmt.Println("5. Email Harvester           - Email address collection")
-	fmt.Println("6. Directory Bruteforcer     - Web directory discovery")
-	fmt.Println("7. Report Generator          - Generate comprehensive reports")
-	fmt.Println("8. Host & Subdomain Resolver - DNS resolution and validation")
-	fmt.Println("9. Check Dependencies        - Verify required tools installation")
+	fmt.Println("2. Port Scanner              - Network port scanning with nmap integration")
+	fmt.Println("3. OSINT & Vulnerability     - Open Source Intelligence gathering")
+	fmt.Println("4. Web Application Scanner   - Web vulnerability assessment")
+	fmt.Println("5. S3 Bucket Scanner         - AWS S3 bucket enumeration")
+	fmt.Println("6. Email Harvester           - Email address collection")
+	fmt.Println("7. Directory Bruteforcer     - Web directory discovery")
+	fmt.Println("8. Report Generator          - Generate comprehensive reports")
+	fmt.Println("9. Host & Subdomain Resolver - DNS resolution and validation")
+	fmt.Println("10. Check Dependencies       - Verify required tools installation")
 	fmt.Println("\nFor more information, visit: https://github.com/your-repo/GopherStrike")
 }
 

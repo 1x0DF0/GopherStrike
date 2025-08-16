@@ -1,0 +1,118 @@
+# Compiled Binaries
+GopherStrike
+gopherstrike
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go workspace file
+go.work
+
+# Development Documentation (not needed for compilation)
+API_DOCUMENTATION.md
+BUILD.md
+BUILD_VERIFICATION.md
+CONTRIBUTING.md
+IMPROVEMENT_PLAN.md
+SECURITY.md
+SECURITY_REVIEW_COMPLETE.md
+
+# Development and Testing Files
+testing/
+logs/
+reports/
+venv/
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Log files
+*.log
+*.log.*
+
+# Scan results and output files
+*.json
+*.txt
+*.csv
+scan_*
+*_scan_*
+lastscan_*
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+temp/
+
+# Development scripts output
+test_results_*
+error_summary_*
+fuzzing_results_*
+fuzzing_summary_*
+detailed_tool_test_*
+tool_*_output.txt
+tool_*_error.txt
+
+# Configuration files that may contain sensitive data
+config.json
+.env
+.env.local
+.env.*.local
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Archive files (unless specifically needed)
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# Keep essential files for compilation
+!main.go
+!go.mod
+!go.sum
+!README.md
+!LICENSE
+!build.sh
+!install.sh
+!NmapScript_copy.py
+!pkg/
+!utils/
