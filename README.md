@@ -118,7 +118,7 @@ GopherStrike is a professional-grade security testing framework designed for cyb
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/GopherStrike.git
+git clone https://github.com/1x0DF0/GopherStrike.git
 cd GopherStrike
 
 # Install dependencies
